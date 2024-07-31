@@ -45,7 +45,7 @@ frappe.ui.form.on('Patient Encounter', {
 	},
 
 	refresh: function(frm) {
-
+		manage_medal_reader_button(frm);
 		refresh_field('drug_prescription');
 		refresh_field('lab_test_prescription');
 
@@ -199,6 +199,7 @@ frappe.ui.form.on('Patient Encounter', {
 
 	patient: function(frm) {
 		frm.events.set_patient_info(frm);
+		manage_medal_reader_button(frm);
 	},
 
 	practitioner: function(frm) {
@@ -701,4 +702,77 @@ var show_orders = async function(frm) {
 		});
 		orders.refresh();
 	}
+}
+
+
+var manage_medal_reader_button = function(frm) {
+	if (!frm.doc.patient) {
+		$("#startEPOCT").remove();
+	} else {
+		if ($('#startEPOCT').length === 0) {
+			let city;
+			frappe.call({
+				method: "frappe.contacts.doctype.contact.contact.address_query",
+				args: {
+					links: [{
+						link_doctype: "Patient",
+						link_name: frm.doc.patient
+					}]
+				},
+				callback: function (r) {
+					if (r && r.message[0]) {
+						frappe.db.get_doc('Address', r.message[0]).then(doc => {
+							city = doc.city;
+							frappe.call({
+								method: 'healthcare.healthcare.doctype.patient.patient.get_patient_detail',
+								args: {
+									patient: frm.doc.patient
+								},
+								callback: function(data) {
+									let patient_data = {
+										'first_name': data.message.first_name,
+										'last_name': data.message.last_name,
+										'sex': data.message.sex,
+										'dob': data.message.dob,
+										'name' : frm.doc.name,
+										'existing' : frm.doc.__unsaved ? true : false,
+										'__onload' : {
+											'addr_list' : [{
+												'city': city
+											}]
+										}
+									};
+									let encoded_data = btoa(JSON.stringify(patient_data));
+									let url = "http://0.0.0.0:8009/prefill/96/" + encoded_data;
+									$("div[data-fieldname='patient_age']").after( "<button id='startEPOCT' class='btn btn-xs btn-secondary grid-add-row'>ePOCT+</button>" );
+									if (frm.doc.__unsaved) {
+										$("#startEPOCT").on('click', function() {
+											save_w_redirect(frm, url)
+										});
+									} else {
+										$("#startEPOCT").on('click', function() {
+											redirect(url)
+										});
+									}
+								}
+							});
+						})
+					}
+				},
+			});
+		}
+	}
+}
+
+
+var save_w_redirect = function(frm, url) {
+	frm.save().then(() => {
+		frappe.dom.freeze(__('Loading...'));
+		redirect(url)
+	});
+}
+
+var redirect = function(url) {
+	frappe.dom.freeze(__('Loading...'));
+	window.location.href = url;
 }
