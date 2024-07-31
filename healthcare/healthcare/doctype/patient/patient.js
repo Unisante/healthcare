@@ -4,6 +4,13 @@
 
 frappe.ui.form.on('Patient', {
 	refresh: function (frm) {
+		
+		frm.add_custom_button(__('ePOCT+'), function() {
+			let data = btoa(JSON.stringify(frm.doc));
+			frappe.dom.freeze(__('Loading...'));
+        		window.location.href = "http://0.0.0.0:8009/prefill/96/" + data;
+		}, __("Utilities"));
+		
 		frm.set_query('patient', 'patient_relation', function () {
 			return {
 				filters: [
