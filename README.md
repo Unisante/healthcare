@@ -1,3 +1,21 @@
+### TODO
+* [Create a custom app](https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md) to facilitate integration
+
+### Change from original repo
+* [Add button to patient page](https://github.com/Unisante/healthcare/commit/72b1bffbac09f6a2feb065fd52521a864abca925)
+* [Add button to patient encounter page](https://github.com/Unisante/healthcare/commit/2e168ad27e01b354f64b3c06f998fc90bb637f32)
+```python
+frm.add_custom_button(__('ePOCT+'), function() {
+    let data = btoa(JSON.stringify(frm.doc));
+    frappe.dom.freeze(__('Loading...'));
+        window.location.href = erpnext_url + data;
+    }, __("Utilities"));
+}
+```
+
+https://github.com/user-attachments/assets/0acf11fb-656b-4730-bac5-771a5c3ef8eb
+
+
 <div align="center">
 <a href="https://frappehealth.com">
     <img src="https://raw.githubusercontent.com/frappe/healthcare/develop/healthcare/public/images/healthcare.svg" height="128" alt="Marley Health Logo">
